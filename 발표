@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <title>중핵 & 전공 누적 학점 확인</title>
+    <style>
+        /* 전체 배경과 기본 폰트 */
+        body {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            font-family: 'Noto Sans KR', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #f0f0f0;
+            margin: 0;
+            padding: 40px 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* 제목 스타일 */
+        h2, h3 {
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 30px;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        /* 졸업 학점 정보 박스 */
+        #graduationInfo {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 15px 25px;
+            border-radius: 15px;
+            font-size: 22px;
+            font-weight: 600;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            margin-bottom: 40px;
+            width: 100%;
+            max-width: 500px;
+            color: #f0f0f0;
+            text-align: center;
+        }
+
+        /* 컨테이너 (테이블 모음) */
+        .container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            max-width: 900px;
+            margin-bottom: 40px;
+        }
+
+        /* 테이블 스타일 */
+        table {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            width: 180px;
+            transition: background 0.3s ease, box-shadow 0.3s ease;
+            user-select: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        table:hover {
+            background: rgba(255, 255, 255, 0.35);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.4);
+        }
+
+        th {
+            padding: 25px 10px;
+            font-size: 20px;
+            font-weight: 700;
+            text-align: center;
+            color: #222;
+            position: relative;
+            letter-spacing: 1px;
+        }
+
+        /* 체크된 과목 표시 */
+        th.checked::after {
+            content: "✔";
+            position: absolute;
+            right: 15px;
+            top: 15px;
+            color: #32cd32;
+            font-weight: 900;
+            font-size: 24px;
+        }
+
+        /* 체크 안된 카테고리 색상 */
+        th.not-checked {
+            color: rgba(34,34,34,0.5);
+        }
+
+        /* 뒤로가기 테이블 */
+        #backButton table {
+            width: 140px;
+            background: rgba(255, 255, 255, 0.25);
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+        }
+
+        #backButton th {
+            padding: 15px;
+            font-size: 18px;
+            color: #222;
+            font-weight: 600;
+            letter-spacing: 1.2px;
+        }
+
+        /* 결과 및 입력창 스타일 */
+        #result, #majorResult, #scoreSummary {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 20px;
+            font-size: 18px;
+            white-space: pre-line;
+            max-width: 600px;
+            margin: 0 auto 30px auto;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+            color: #eee;
+        }
+
+        /* 입력 영역 */
+        #inputArea, #majorInputArea {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 14px 18px;
+            font-size: 18px;
+            border-radius: 10px;
+            border: none;
+            outline: none;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            transition: box-shadow 0.3s ease;
+        }
+
+        input[type="text"]:focus {
+            box-shadow: 0 0 10px #64b5f6;
+            background-color: #fff;
+            color: #333;
+        }
+
+        button {
+            padding: 14px 28px;
+            background: #5a86ff;
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        button:hover {
+            background: #3f63d9;
+        }
+
+        /* 메시지 출력 */
+        #message, #majorMessage {
+            text-align: center;
+            font-size: 17px;
+            height: 24px;
+            margin-top: 10px;
+            color: #ff6b6b;
+            font-weight: 600;
+        }
+
+        /* 학점 요약 */
+        #scoreSummary {
+            max-width: 600px;
+            margin: 0 auto 40px auto;
+            font-size: 19px;
+            font-weight: 700;
+            white-space: pre-line;
+            background: rgba(0,0,0,0.2);
+            padding: 15px 20px;
+            border-radius: 12px;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+        }
+
+        /* 반응형 */
+        @media (max-width: 640px) {
+            .container {
+                flex-direction: column;
+                align-items: center;
+            }
+            table {
+                width: 100%;
+                max-width: 300px;
+            }
+            #inputArea, #majorInputArea {
+                flex-direction: column;
+            }
+            button {
+                width: 100%;
+                margin-left: 0;
+            }
+        }
+
+        /* 추가: 선택된 전공 표시 (오른쪽 위 고정) */
+        #selectedMajorDisplay {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            font-size: 20px;
+            font-weight: 700;
+            color: #fff;
+            background: rgba(0,0,0,0.3);
+            padding: 8px 15px;
+            border-radius: 12px;
+            user-select: none;
+            display: none;
+            z-index: 9999;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+        }
+    </style>
+</head>
+<body>
+
+<h2>상위 분류 선택</h2>
+
+<div id="graduationInfo">
+    졸업학점: 130학점 | 현재 누적 학점: <span id="currentCredits">0</span>학점
+</div>
+
+<!-- 전공 선택 테이블 (처음에만 보임) -->
+<div id="initialSelectContainer" style="margin-bottom: 20px;">
+    <table onclick="showMajorOptions()"><tr><th>전공 선택</th></tr></table>
+</div>
+
+<!-- 기존 메인 메뉴 -->
+<div class="container" id="mainCategory" style="display: none;">
+    <table onclick="showCoreTable()"><tr><th>중핵</th></tr></table>
+    <table onclick="showMajorTable()"><tr><th>전공</th></tr></table>
+    <table onclick="hideAllSubTables()"><tr><th>자교</th></tr></table>
+    <table onclick="hideAllSubTables()"><tr><th>기교</th></tr></table>
+</div>
+
+<!-- 전공 4개 선택 테이블 (처음엔 숨김) -->
+<div class="container" id="majorOptionsContainer" style="display: none; margin-top: 20px;">
+    <table onclick="selectMajor(101)"><tr><th>국제학부</th></tr></table>
+    <table onclick="selectMajor(102)"><tr><th>사회복지학과</th></tr></table>
+    <table onclick="selectMajor(103)"><tr><th>법학과</th></tr></table>
+    <table onclick="selectMajor(104)"><tr><th>컴퓨터정보공학부</th></tr></table>
+</div>
+
+<!-- 선택된 전공 표시 -->
+<div id="selectedMajorDisplay"></div>
+
+<!-- 뒤로가기 테이블 -->
+<div id="backButton" style="display:none; margin-top:20px;">
+    <table onclick="goBack()">
+        <tr><th>◀ 뒤로가기</th></tr>
+    </table>
+</div>
+
+<!-- 중핵 하위 카테고리 -->
+<div id="coreTable" style="display:none; margin-top: 20px;">
+    <h3>중핵 카테고리 선택</h3>
+    <div class="container" id="coreCategories">
+        <table id="cat1" onclick="selectCoreCategory(1)"><tr><th>자연 과학</th></tr></table>
+        <table id="cat2" onclick="selectCoreCategory(2)"><tr><th>휴먼 테크</th></tr></table>
+        <table id="cat3" onclick="selectCoreCategory(3)"><tr><th>인문</th></tr></table>
+        <table id="cat4" onclick="selectCoreCategory(4)"><tr><th>영어</th></tr></table>
+    </div>
+</div>
+
+<!-- 중핵 결과 및 입력 -->
+<div id="result" style="display:none;">여기에 중핵 과목 목록 표시</div>
+<div id="inputArea" style="display:none;">
+    <input type="text" id="subjectInput" placeholder="수강한 과목명을 입력하세요" />
+    <button onclick="addCoreSubject()">과목 추가</button>
+    <div id="message"></div>
+</div>
+<div id="scoreSummary"></div>
+
+<!-- 전공 하위 카테고리 -->
+<div id="majorTable" style="display:none; margin-top: 20px;">
+    <h3>전공 카테고리 선택</h3>
+    <div class="container">
+        <table onclick="selectMajorCategory(101)"><tr><th>국제학부</th></tr></table>
+        <table onclick="selectMajorCategory(102)"><tr><th>사회복지학과</th></tr></table>
+        <table onclick="selectMajorCategory(103)"><tr><th>법학과</th></tr></table>
+    </div>
+</div>
+
+<!-- 전공 결과 및 입력 -->
+<div id="majorResult" style="display:none;">여기에 전공 과목 목록 표시</div>
+<div id="majorInputArea" style="display:none;">
+    <input type="text" id="majorSubjectInput" placeholder="수강한 과목명을 입력하세요" />
+    <button onclick="addMajorSubject()">과목 추가</button>
+    <div id="majorMessage"></div>
+</div>
+
+<script>
+    // === 중핵 데이터 ===
+    const coreData = {
+        1: { "기초 과학 A": 3, "기초 과학 B": 3, "실험 과학 C": 3 },
+        2: { "휴먼테크 기초": 3, "AI 이해": 3, "디지털 리터러시": 3 },
+        3: { "인문학 이론": 3, "철학 개론": 3, "사회 이해": 3 },
+        4: { "English Reading": 3, "English Writing": 3, "English Conversation": 3 }
+    };
+    const minCoreCredits = 3;  // 중핵 최소 학점 목표
+
+    // === 전공 데이터 ===
+    const majorData = {
+        101: { // 국제학부: 과목명: 학점
+            "국제 관계론": 3,
+            "세계 경제학": 3,
+            "글로벌 커뮤니케이션": 3
+        },
+        102: ["사회복지 정책", "복지 행정론", "지역 사회 개발"],
+        103: ["민법 개론", "형법 총론", "헌법 이해"],
+        104: ["컴퓨터 구조", "자료구조", "운영체제"] // 컴퓨터정보공학부 예시 과목
+    };
+
+    // === 수강한 과목들 (중핵/전공 합쳐서 관리) ===
+    const taken = [];
+
+    // 현재 선택한 카테고리 상태
+    let currentCoreCategory = null;
+    let currentMajorCategory = null;
+
+    // 엘리먼트
+    const mainCategoryDiv = document.getElementById('mainCategory');
+    const coreTableDiv = document.getElementById('coreTable');
+    const majorTableDiv = document.getElementById('majorTable');
+
+    const resultDiv = document.getElementById('result');
+    const inputAreaDiv = document.getElementById('inputArea');
+    const messageDiv = document.getElementById('message');
+    const subjectInput = document.getElementById('subjectInput');
+    const scoreSummaryDiv = document.getElementById('scoreSummary');
+
+    const majorResultDiv = document.getElementById('majorResult');
+    const majorInputAreaDiv = document.getElementById('majorInputArea');
+    const majorMessageDiv = document.getElementById('majorMessage');
+    const majorSubjectInput = document.getElementById('majorSubjectInput');
+
+    // 초기 선택 컨테이너와 전공 옵션 컨테이너, 전공 선택 표시 요소
+    const initialSelectContainer = document.getElementById('initialSelectContainer');
+    const majorOptionsContainer = document.getElementById('majorOptionsContainer');
+    const selectedMajorDisplay = document.getElementById('selectedMajorDisplay');
+
+    // 졸업학점 상수
+    const graduationCredits = 130;
+
+    // --- 전공 선택 테이블 클릭 ---
+    function showMajorOptions() {
+        initialSelectContainer.style.display = 'none';
+        majorOptionsContainer.style.display = 'flex';
+        mainCategoryDiv.style.display = 'none';
+
+        coreTableDiv.style.display = 'none';
+        majorTableDiv.style.display = 'none';
+
+        selectedMajorDisplay.style.display = 'none';
+        document.getElementById('backButton').style.display = 'none';
+    }
+
+    // --- 전공 4개 중 하나 선택 ---
+    function selectMajor(majorCode) {
+        currentMajorCategory = majorCode;
+        const name = getMajorNameByCode(majorCode);
+        selectedMajorDisplay.style.display = 'block';
+        selectedMajorDisplay.textContent = `전공: ${name}`;
+
+        majorOptionsContainer.style.display = 'none';
+        initialSelectContainer.style.display = 'none';
+
+        mainCategoryDiv.style.display = 'flex';
+
+        document.getElementById('backButton').style.display = 'block';
+
+        resetAll();
+    }
+
+    // --- 전공 코드 → 이름 매핑 ---
+    function getMajorNameByCode(code) {
+        switch(code) {
+            case 101: return "국제학부";
+            case 102: return "사회복지학과";
+            case 103: return "법학과";
+            case 104: return "컴퓨터정보공학부";
+            default: return "";
+        }
+    }
+
+    // --- 초기화 ---
+    function resetAll() {
+        currentCoreCategory = null;
+        // currentMajorCategory는 전공 선택 유지
+        // currentMajorCategory = null;
+
+        resultDiv.style.display = 'none';
+        inputAreaDiv.style.display = 'none';
+        messageDiv.textContent = "";
+        majorResultDiv.style.display = 'none';
+        majorInputAreaDiv.style.display = 'none';
+        majorMessageDiv.textContent = "";
+        scoreSummaryDiv.textContent = "";
+
+        updateTotalCredits();
+    }
+
+    // --- 메인 카테고리: 중핵 보여주기 ---
+    function showCoreTable() {
+        mainCategoryDiv.style.display = 'none';
+        majorTableDiv.style.display = 'none';
+        coreTableDiv.style.display = 'block';
+
+        // 초기화
+        resultDiv.style.display = 'none';
+        inputAreaDiv.style.display = 'none';
+        messageDiv.textContent = "";
+        scoreSummaryDiv.textContent = "";
+
+        majorResultDiv.style.display = 'none';
+        majorInputAreaDiv.style.display = 'none';
+        majorMessageDiv.textContent = "";
+
+        currentCoreCategory = null;
+
+        updateCoreCheckMarks();
+        updateCoreScoreSummary();
+        updateTotalCredits();
+
+        // 뒤로가기 버튼 보이기
+        document.getElementById('backButton').style.display = 'block';
+    }
+
+    // --- 메인 카테고리: 전공 보여주기 ---
+    function showMajorTable() {
+        mainCategoryDiv.style.display = 'none';
+        coreTableDiv.style.display = 'none';
+        majorTableDiv.style.display = 'block';
+
+        majorResultDiv.style.display = 'none';
+        majorInputAreaDiv.style.display = 'none';
+        majorMessageDiv.textContent = "";
+
+        resultDiv.style.display = 'none';
+        inputAreaDiv.style.display = 'none';
+        messageDiv.textContent = "";
+
+        // 뒤로가기 버튼 보이기
+        document.getElementById('backButton').style.display = 'block';
+    }
+
+    // --- 자교, 기교는 아직 구현 안 됨, 그냥 숨김 처리 ---
+    function hideAllSubTables() {
+        mainCategoryDiv.style.display = 'flex';
+        coreTableDiv.style.display = 'none';
+        majorTableDiv.style.display = 'none';
+
+        resultDiv.style.display = 'none';
+        inputAreaDiv.style.display = 'none';
+        messageDiv.textContent = "";
+        majorResultDiv.style.display = 'none';
+        majorInputAreaDiv.style.display = 'none';
+        majorMessageDiv.textContent = "";
+
+        document.getElementById('backButton').style.display = 'none';
+    }
+
+    // --- 뒤로가기 ---
+    function goBack() {
+        // 뒤로가기는 전공 선택 후 메인 메뉴로 돌아가기 용도
+        coreTableDiv.style.display = 'none';
+        majorTableDiv.style.display = 'none';
+        resultDiv.style.display = 'none';
+        inputAreaDiv.style.display = 'none';
+        messageDiv.textContent = "";
+        majorResultDiv.style.display = 'none';
+        majorInputAreaDiv.style.display = 'none';
+        majorMessageDiv.textContent = "";
+
+        mainCategoryDiv.style.display = 'flex';
+        document.getElementById('backButton').style.display = 'none';
+    }
+
+    // --- 중핵 카테고리 선택 ---
+    function selectCoreCategory(code) {
+        currentCoreCategory = code;
+        showCoreSubjects(code);
+    }
+
+    // --- 중핵 과목 리스트 보여주기 ---
+    function showCoreSubjects(code) {
+        const subjects = coreData[code];
+        if (!subjects) return;
+
+        let listText = "";
+        for (const [subject, credit] of Object.entries(subjects)) {
+            listText += `${subject} (${credit}학점)\n`;
+        }
+        resultDiv.textContent = listText;
+        resultDiv.style.display = 'block';
+
+        inputAreaDiv.style.display = 'flex';
+        subjectInput.value = "";
+        messageDiv.textContent = "";
+
+        majorResultDiv.style.display = 'none';
+        majorInputAreaDiv.style.display = 'none';
+        majorMessageDiv.textContent = "";
+
+        updateCoreCheckMarks();
+    }
+
+    // --- 전공 카테고리 선택 ---
+    function selectMajorCategory(code) {
+        currentMajorCategory = code;
+        showMajorSubjects(code);
+    }
+
+    // --- 전공 과목 리스트 보여주기 ---
+    function showMajorSubjects(code) {
+        let subjects;
+        if (code === 101) {
+            subjects = majorData[101];
+        } else if (code === 102) {
+            subjects = majorData[102];
+        } else if (code === 103) {
+            subjects = majorData[103];
+        } else {
+            subjects = {};
+        }
+
+        let listText = "";
+        if (Array.isArray(subjects)) {
+            subjects.forEach(s => listText += `${s}\n`);
+        } else {
+            for (const [subject, credit] of Object.entries(subjects)) {
+                listText += `${subject} (${credit}학점)\n`;
+            }
+        }
+
+        majorResultDiv.textContent = listText;
+        majorResultDiv.style.display = 'block';
+
+        majorInputAreaDiv.style.display = 'flex';
+        majorSubjectInput.value = "";
+        majorMessageDiv.textContent = "";
+
+        resultDiv.style.display = 'none';
+        inputAreaDiv.style.display = 'none';
+        messageDiv.textContent = "";
+    }
+
+    // --- 중핵 과목 추가 ---
+    function addCoreSubject() {
+        const subj = subjectInput.value.trim();
+        if (!subj) {
+            messageDiv.textContent = "과목명을 입력하세요.";
+            return;
+        }
+
+        // 현재 카테고리 내 과목인지 확인
+        if (!currentCoreCategory) {
+            messageDiv.textContent = "중핵 카테고리를 선택하세요.";
+            return;
+        }
+
+        if (!(subj in coreData[currentCoreCategory])) {
+            messageDiv.textContent = "해당 과목은 현재 중핵 카테고리에 없습니다.";
+            return;
+        }
+
+        if (taken.includes(subj)) {
+            messageDiv.textContent = "이미 추가한 과목입니다.";
+            return;
+        }
+
+        taken.push(subj);
+        messageDiv.textContent = `"${subj}" 과목이 추가되었습니다.`;
+        subjectInput.value = "";
+
+        updateCoreCheckMarks();
+        updateTotalCredits();
+        updateCoreScoreSummary();
+    }
+
+    // --- 전공 과목 추가 ---
+    function addMajorSubject() {
+        const subj = majorSubjectInput.value.trim();
+        if (!subj) {
+            majorMessageDiv.textContent = "과목명을 입력하세요.";
+            return;
+        }
+
+        if (!currentMajorCategory) {
+            majorMessageDiv.textContent = "전공 카테고리를 선택하세요.";
+            return;
+        }
+
+        const subjects = majorData[currentMajorCategory];
+        let valid = false;
+        if (Array.isArray(subjects)) {
+            valid = subjects.includes(subj);
+        } else {
+            valid = subj in subjects;
+        }
+        if (!valid) {
+            majorMessageDiv.textContent = "해당 과목은 현재 전공 카테고리에 없습니다.";
+            return;
+        }
+
+        if (taken.includes(subj)) {
+            majorMessageDiv.textContent = "이미 추가한 과목입니다.";
+            return;
+        }
+
+        taken.push(subj);
+        majorMessageDiv.textContent = `"${subj}" 과목이 추가되었습니다.`;
+        majorSubjectInput.value = "";
+
+        updateMajorCheckMarks();
+        updateTotalCredits();
+    }
+
+    // --- 중핵 과목 체크 표시 업데이트 ---
+    function updateCoreCheckMarks() {
+        for (let i = 1; i <= 4; i++) {
+            const table = document.getElementById('cat' + i);
+            if (!table) continue;
+
+            const subjects = coreData[i];
+            if (!subjects) continue;
+
+            // 카테고리 내 하나라도 수강했으면 체크 표시
+            let checked = false;
+            for (const subj of Object.keys(subjects)) {
+                if (taken.includes(subj)) {
+                    checked = true;
+                    break;
+                }
+            }
+
+            const th = table.querySelector('th');
+            if (checked) {
+                th.classList.add('checked');
+                th.classList.remove('not-checked');
+            } else {
+                th.classList.remove('checked');
+                th.classList.add('not-checked');
+            }
+        }
+    }
+
+    // --- 전공 과목 체크 표시 (전공 카테고리 별로 하면 더 좋지만 간단히 전공 선택 테이블만 적용) ---
+    function updateMajorCheckMarks() {
+        // 현재 majorTable 내 모든 table 검사해서 taken에 과목 있는지 체크
+        const tables = majorTableDiv.querySelectorAll('table');
+        tables.forEach(table => {
+            const th = table.querySelector('th');
+            const majorName = th.textContent.trim();
+
+            // majorName과 majorData 코드 비교
+            let code = null;
+            if (majorName === "국제학부") code = 101;
+            else if (majorName === "사회복지학과") code = 102;
+            else if (majorName === "법학과") code = 103;
+
+            if (!code) return;
+
+            const subjects = majorData[code];
+            let checked = false;
+            if (Array.isArray(subjects)) {
+                for (const subj of subjects) {
+                    if (taken.includes(subj)) {
+                        checked = true;
+                        break;
+                    }
+                }
+            } else {
+                for (const subj of Object.keys(subjects)) {
+                    if (taken.includes(subj)) {
+                        checked = true;
+                        break;
+                    }
+                }
+            }
+
+            if (checked) {
+                th.classList.add('checked');
+                th.classList.remove('not-checked');
+            } else {
+                th.classList.remove('checked');
+                th.classList.add('not-checked');
+            }
+        });
+    }
+
+    // --- 졸업학점 대비 현재 학점 계산 및 표시 ---
+    function updateTotalCredits() {
+        let total = 0;
+
+        for (const subj of taken) {
+            // 중핵 과목인지?
+            let found = false;
+
+            // 중핵
+            for (const subjects of Object.values(coreData)) {
+                if (subj in subjects) {
+                    total += subjects[subj];
+                    found = true;
+                    break;
+                }
+            }
+            if (found) continue;
+
+            // 전공
+            for (const [key, subjects] of Object.entries(majorData)) {
+                if (Array.isArray(subjects)) {
+                    if (subjects.includes(subj)) {
+                        total += 3;  // 전공 배열 과목은 3학점 고정
+                        found = true;
+                        break;
+                    }
+                } else {
+                    if (subj in subjects) {
+                        total += subjects[subj];
+                        found = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        document.getElementById('currentCredits').textContent = total;
+    }
+
+    // --- 중핵 학점 요약 ---
+    function updateCoreScoreSummary() {
+        let coreCount = 0;
+        for (const subj of taken) {
+            for (const subjects of Object.values(coreData)) {
+                if (subj in subjects) {
+                    coreCount += 1;
+                }
+            }
+        }
+        const passed = coreCount >= minCoreCredits;
+        scoreSummaryDiv.textContent = passed ? 
+            `중핵 과목: ${coreCount}개 (최소 목표 달성)` :
+            `중핵 과목: ${coreCount}개 (최소 ${minCoreCredits}개 필요)`;
+    }
+
+    // 초기 상태는 전공 선택 테이블만 보여줌
+    initialSelectContainer.style.display = 'block';
+    majorOptionsContainer.style.display = 'none';
+    mainCategoryDiv.style.display = 'none';
+    coreTableDiv.style.display = 'none';
+    majorTableDiv.style.display = 'none';
+    resultDiv.style.display = 'none';
+    inputAreaDiv.style.display = 'none';
+    majorResultDiv.style.display = 'none';
+    majorInputAreaDiv.style.display = 'none';
+    selectedMajorDisplay.style.display = 'none';
+    document.getElementById('backButton').style.display = 'none';
+
+</script>
+
+</body>
+</html>
