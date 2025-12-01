@@ -5,206 +5,208 @@
     <title>중핵 & 전공 누적 학점 확인</title>
     <style>
         /* 전체 배경과 기본 폰트 */
-body {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    font-family: 'Noto Sans KR', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    color: #fff;
-    margin: 0;
-    padding: 40px 20px;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
+        body {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            font-family: 'Noto Sans KR', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #f0f0f0; /* 흰색 -> 좀 더 밝고 선명하게 변경 */
+            margin: 0;
+            padding: 40px 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
 
-/* 제목 스타일 */
-h2, h3 {
-    font-weight: 700;
-    text-align: center;
-    margin-bottom: 30px;
-    text-shadow: 0 2px 5px rgba(0,0,0,0.3);
-}
+        /* 제목 스타일 */
+        h2, h3 {
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 30px;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
 
-/* 졸업 학점 정보 박스 */
-#graduationInfo {
-    background: rgba(255, 255, 255, 0.15);
-    padding: 15px 25px;
-    border-radius: 15px;
-    font-size: 22px;
-    font-weight: 600;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    margin-bottom: 40px;
-    width: 100%;
-    max-width: 500px;
-}
+        /* 졸업 학점 정보 박스 */
+        #graduationInfo {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 15px 25px;
+            border-radius: 15px;
+            font-size: 22px;
+            font-weight: 600;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            margin-bottom: 40px;
+            width: 100%;
+            max-width: 500px;
+            color: #f0f0f0; /* 이 부분도 같이 */
+        }
 
-/* 컨테이너 (테이블 모음) */
-.container {
-    display: flex;
-    gap: 20px;
-    justify-content: center;
-    flex-wrap: wrap;
-    max-width: 900px;
-    margin-bottom: 40px;
-}
+        /* 컨테이너 (테이블 모음) */
+        .container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            max-width: 900px;
+            margin-bottom: 40px;
+        }
 
-/* 테이블 스타일 */
-table {
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 12px;
-    border: none;
-    cursor: pointer;
-    width: 180px;
-    transition: background 0.3s ease, box-shadow 0.3s ease;
-    user-select: none;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-}
+        /* 테이블 스타일 */
+        table {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            width: 180px;
+            transition: background 0.3s ease, box-shadow 0.3s ease;
+            user-select: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
 
-table:hover {
-    background: rgba(255, 255, 255, 0.35);
-    box-shadow: 0 6px 15px rgba(0,0,0,0.4);
-}
+        table:hover {
+            background: rgba(255, 255, 255, 0.35);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.4);
+        }
 
-th {
-    padding: 25px 10px;
-    font-size: 20px;
-    font-weight: 700;
-    text-align: center;
-    color: #fff;
-    position: relative;
-    letter-spacing: 1px;
-}
+        th {
+            padding: 25px 10px;
+            font-size: 20px;
+            font-weight: 700;
+            text-align: center;
+            color: #222; /* #fff -> #222 검은색으로 변경 */
+            position: relative;
+            letter-spacing: 1px;
+        }
 
-/* 체크된 과목 표시 */
-th.checked::after {
-    content: "✔";
-    position: absolute;
-    right: 15px;
-    top: 15px;
-    color: #32cd32;
-    font-weight: 900;
-    font-size: 24px;
-}
+        /* 체크된 과목 표시 */
+        th.checked::after {
+            content: "✔";
+            position: absolute;
+            right: 15px;
+            top: 15px;
+            color: #32cd32;
+            font-weight: 900;
+            font-size: 24px;
+        }
 
-/* 체크 안된 카테고리 색상 */
-th.not-checked {
-    color: rgba(255, 255, 255, 0.5);
-}
+        /* 체크 안된 카테고리 색상 */
+        th.not-checked {
+            color: rgba(34,34,34,0.5); /* 회색 계열로 약간 투명 */
+        }
 
-/* 뒤로가기 테이블 */
-#backButton table {
-    width: 140px;
-    background: rgba(255, 255, 255, 0.25);
-    border-radius: 12px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.25);
-}
+        /* 뒤로가기 테이블 */
+        #backButton table {
+            width: 140px;
+            background: rgba(255, 255, 255, 0.25);
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+        }
 
-#backButton th {
-    padding: 15px;
-    font-size: 18px;
-    color: #fff;
-    font-weight: 600;
-    letter-spacing: 1.2px;
-}
+        #backButton th {
+            padding: 15px;
+            font-size: 18px;
+            color: #222; /* 검은색으로 변경 */
+            font-weight: 600;
+            letter-spacing: 1.2px;
+        }
 
-/* 결과 및 입력창 스타일 */
-#result, #majorResult {
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 12px;
-    padding: 20px;
-    font-size: 18px;
-    white-space: pre-line;
-    max-width: 600px;
-    margin: 0 auto 30px auto;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-}
+        /* 결과 및 입력창 스타일 */
+        #result, #majorResult, #scoreSummary {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 20px;
+            font-size: 18px;
+            white-space: pre-line;
+            max-width: 600px;
+            margin: 0 auto 30px auto;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+            color: #eee; /* 흰색보다 살짝 더 눈에 잘 띄게 */
+        }
 
-/* 입력 영역 */
-#inputArea, #majorInputArea {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin-bottom: 30px;
-    max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
-}
+        /* 입력 영역 */
+        #inputArea, #majorInputArea {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
 
-input[type="text"] {
-    flex: 1;
-    padding: 14px 18px;
-    font-size: 18px;
-    border-radius: 10px;
-    border: none;
-    outline: none;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-    transition: box-shadow 0.3s ease;
-}
+        input[type="text"] {
+            flex: 1;
+            padding: 14px 18px;
+            font-size: 18px;
+            border-radius: 10px;
+            border: none;
+            outline: none;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            transition: box-shadow 0.3s ease;
+        }
 
-input[type="text"]:focus {
-    box-shadow: 0 0 10px #64b5f6;
-    background-color: #fff;
-    color: #333;
-}
+        input[type="text"]:focus {
+            box-shadow: 0 0 10px #64b5f6;
+            background-color: #fff;
+            color: #333;
+        }
 
-button {
-    padding: 14px 28px;
-    background: #5a86ff;
-    color: #fff;
-    border: none;
-    border-radius: 12px;
-    font-size: 18px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: background 0.3s ease;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-}
+        button {
+            padding: 14px 28px;
+            background: #5a86ff;
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
 
-button:hover {
-    background: #3f63d9;
-}
+        button:hover {
+            background: #3f63d9;
+        }
 
-/* 메시지 출력 */
-#message, #majorMessage {
-    text-align: center;
-    font-size: 17px;
-    height: 24px;
-    margin-top: 10px;
-    color: #ff6b6b;
-    font-weight: 600;
-}
+        /* 메시지 출력 */
+        #message, #majorMessage {
+            text-align: center;
+            font-size: 17px;
+            height: 24px;
+            margin-top: 10px;
+            color: #ff6b6b;
+            font-weight: 600;
+        }
 
-/* 학점 요약 */
-#scoreSummary {
-    max-width: 600px;
-    margin: 0 auto 40px auto;
-    font-size: 19px;
-    font-weight: 700;
-    white-space: pre-line;
-    background: rgba(0,0,0,0.2);
-    padding: 15px 20px;
-    border-radius: 12px;
-    box-shadow: 0 3px 8px rgba(0,0,0,0.3);
-}
+        /* 학점 요약 */
+        #scoreSummary {
+            max-width: 600px;
+            margin: 0 auto 40px auto;
+            font-size: 19px;
+            font-weight: 700;
+            white-space: pre-line;
+            background: rgba(0,0,0,0.2);
+            padding: 15px 20px;
+            border-radius: 12px;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+        }
 
-/* 반응형 */
-@media (max-width: 640px) {
-    .container {
-        flex-direction: column;
-        align-items: center;
-    }
-    table {
-        width: 100%;
-        max-width: 300px;
-    }
-    #inputArea, #majorInputArea {
-        flex-direction: column;
-    }
-    button {
-        width: 100%;
-        margin-left: 0;
-    }
-}
+        /* 반응형 */
+        @media (max-width: 640px) {
+            .container {
+                flex-direction: column;
+                align-items: center;
+            }
+            table {
+                width: 100%;
+                max-width: 300px;
+            }
+            #inputArea, #majorInputArea {
+                flex-direction: column;
+            }
+            button {
+                width: 100%;
+                margin-left: 0;
+            }
+        }
 
         .container {
             display: flex;
@@ -284,6 +286,7 @@ button:hover {
             padding: 10px;
             text-align: center;
             user-select: none;
+            color: #222; /* 검은색으로 변경 */
         }
     </style>
 </head>
