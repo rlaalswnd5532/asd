@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <title>중핵 및 전공 카테고리 선택</title>
+    <style>
+        .container {
+            display: flex;
+            gap: 10px;
+        }
+        table {
+            border-collapse: collapse;
+            border: 3px solid #000;
+            cursor: pointer;
+            width: 150px;
+        }
+        th {
+            border: 1px solid #555;
+            padding: 15px;
+            text-align: center;
+            background: #f0f0f0;
+            font-size: 18px;
+        }
+        #result, #majorResult {
+            margin-top: 30px;
+            font-size: 20px;
+            white-space: pre-line;
+        }
+        .taken {
+            color: green;
+            font-weight: bold;
+        }
+        .not-taken {
+            color: gray;
+        }
+        #inputArea, #majorInputArea {
+            margin-top: 20px;
+        }
+        input[type="text"] {
+            padding: 5px;
+            font-size: 16px;
+            width: 300px;
+        }
+        button {
+            padding: 6px 12px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        #message, #majorMessage {
+            margin-top: 10px;
+            font-size: 16px;
+            color: red;
+            height: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<h2>상위 분류 선택</h2>
+
+<div class="container" id="mainCategory">
+    <table onclick="showCoreTable()"><tr><th>중핵</th></tr></table>
+    <table onclick="showMajorTable()"><tr><th>전공</th></tr></table>
+    <table onclick="hideAllSubTables()"><tr><th>자교</th></tr></table>
+    <table onclick="hideAllSubTables()"><tr><th>기교</th></tr></table>
+</div>
+
+<!-- 중핵 하위 카테고리 -->
+<div id="coreTable" style="display:none; margin-top: 20px;">
+    <h3>중핵 카테고리 선택</h3>
+    <div class="container">
+        <table onclick="showCoreList(1)"><tr><th>자연 과학</th></tr></table>
+        <table onclick="showCoreList(2)"><tr><th>인문</th></tr></table>
+        <table onclick="showCoreList(3)"><tr><th>휴먼 테크</th></tr></table>
+        <table onclick="showCoreList(4)"><tr><th>영어</th></tr></table>
+    </div>
+</div>
+
+<!-- 중핵 결과 및 입력 -->
+<div id="result" style="display:none;">
+    여기에 중핵 과목 목록 표시
+</div>
+<div id="inputArea" style="display:none;">
+    <input type="text" id="subjectInput" placeholder="수강한 과목명을 입력하세요" />
+    <button onclick="addCoreSubject()">과목 추가</button>
+    <div id="message"></div>
+</div>
+
+<!-- 전공 하위 카테고리 -->
+<div id="majorTable" style="display:none; margin-top: 20px;">
+    <h3>전공 카테고리 선택</h3>
+    <div class="container">
+        <table onclick="showMajorList(101)"><tr><th>국제학부</th></tr></table>
+        <table onclick="showMajorList(102)"><tr><th>사회복지학과</th></tr></table>
+        <table onclick="showMajorList(103)"><tr><th>법학과</th></tr></table>
+    </div>
+</div>
+
+<!-- 전공 결과 및 입력 -->
+<div id="majorResult" style="display:none;">
+    여기에 전공 과목 목록 표시
+</div>
+<div id="majorInputArea" style="display:none;">
+    <input type="text" id="majorSubjectInput" placeholder="수강한 과목명을 입력하세요" />
+    <button onclick="addMajorSubject()">과목 추가</button>
+    <div id="majorMessage"></div>
+</div>
+
+<script>
+    // 중핵 과목 데이터 (너가 줬던 초기 코드)
+    const coreData = {
+        1: ["기초 과학 A", "기초 과학 B", "실험 과학 C"],
+        2: ["인문학 이론", "철학 개론", "사회 이해"],
+        3: ["휴먼테크 기초", "AI 이해", "디지털 리터러시"],
+        4: ["English Reading", "English Writing", "English Conversation"]
+    };
+
+    // 전공 과목 데이터
+    const majorData = {
+        101: ["국제 관계론", "세계 경제학", "글로벌 커뮤니케이션"],
+        102: ["사회복지 정책", "복지 행정론", "지역 사회 개발"],
+        103: ["민법 개론", "형법 총론", "헌법 이해"]
+    };
+
+    // 수강한 과목들 (중핵/전공 분리 X 한꺼번에 관리)
+    const taken = [];
+
+    // 현재 선택한 카테고리 번호
+    let currentCoreCategory = null;
+    let currentMajorCategory = null;
+
+    const mainCategoryDiv = document.getElementById('mainCategory');
+    const coreTableDiv = document.getElementById('coreTable');
+    const majorTableDiv = document.getElementById('majorTable');
+
+    const resultDiv = document.getElementById('result');
+    const inputAreaDiv = document.getElementById('inputArea');
+    const messageDiv = document.getElementById('message');
+
+    const majorResultDiv = document.getElementById('majorResult');
+    const majorInputAreaDiv = document.getElementById('majorInputArea');
+    const majorMessageDiv = document.getElementById('majorMessage');
+
+    // 중핵 보여주기
+    function showCoreTable() {
+        mainCategoryDiv.style.display = 'none';
+        majorTableDiv.style.display = 'none';
+        coreTableDiv.style.display = 'block';
+
+        // 중핵 관련 결과창/입력칸 숨기기 초기화
+        resultDiv.style.display = 'none';
+        inputAreaDiv.style.display = 'none';
+        messageDiv.textContent = "";
+
+        // 전공 관련 숨김
+        majorResultDiv.style.display = 'none';
+        majorInputAreaDiv.style.display = 'none';
+        majorMessageDiv.textContent = "";
+
+        currentCoreCategory = null;
+        currentMajorCategory = null;
+    }
+
+    // 전공 보여주기
+    function showMajorTable() {
+        mainCategoryDiv.style.display = 'none';
+        coreTableDiv.style.display = 'none';
+        majorTableDiv.style.display = 'block';
+
+        // 전공 관련 결과창/입력칸 숨기기 초기화
+        majorResultDiv.style.display = 'none';
+        majorInputAreaDiv.style.display = 'none';
+        majorMessageDiv.textContent = "";
+
+        // 중핵 관련 숨김
+        resultDiv.style.display = 'none';
+        inputAreaDiv.style.display = 'none';
+        messageDiv.textContent = "";
+
+        currentCoreCategory = null;
+        currentMajorCategory = null;
+    }
+
+    // 자교, 기교 클릭시
+    function hideAllSubTables() {
+        alert('자교, 기교는 아직 구현 안 됐습니다!');
+        mainCategoryDiv.style.display = 'flex';
+        coreTableDiv.style.display = 'none';
+        majorTableDiv.style.display = 'none';
+
+        // 둘 다 숨김
+        resultDiv.style.display = 'none';
+        inputAreaDiv.style.display = 'none';
+        majorResultDiv.style.display = 'none';
+        majorInputAreaDiv.style.display = 'none';
+
+        messageDiv.textContent = "";
+        majorMessageDiv.textContent = "";
+
+        currentCoreCategory = null;
+        currentMajorCategory = null;
+    }
+
+    // 중핵 하위 카테고리 클릭 → 과목 목록 + 입력칸 보여주기
+    function showCoreList(categoryNum) {
+        currentCoreCategory = categoryNum;
+
+        const categoryName = coreTableDiv.querySelector(`th:nth-child(${categoryNum})`)?.textContent
+            || getCoreCategoryName(categoryNum);
+
+        const list = coreData[categoryNum];
+
+        let output = categoryName + " 목록:\n\n";
+
+        list.forEach(item => {
+            if (taken.includes(item)) {
+                output += `✔ ${item}\n`;
+            } else {
+                output += `● ${item}\n`;
+            }
+        });
+
+        resultDiv.innerHTML = output
+            .replace(/✔ (.*)/g, "<span class='taken'>✔ $1</span>")
+            .replace(/● (.*)/g, "<span class='not-taken'>● $1</span>");
+
+        resultDiv.style.display = 'block';
+        inputAreaDiv.style.display = 'block';
+        messageDiv.textContent = "";
+    }
+
+    // 전공 하위 카테고리 클릭 → 과목 목록 + 입력칸 보여주기
+    function showMajorList(categoryNum) {
+        currentMajorCategory = categoryNum;
+
+        const categoryName = majorTableDiv.querySelector(`th:nth-child(${categoryNum - 100})`)?.textContent
+            || getMajorCategoryName(categoryNum);
+
+        const list = majorData[categoryNum];
+
+        let output = categoryName + " 목록:\n\n";
+
+        list.forEach(item => {
+            if (taken.includes(item)) {
+                output += `✔ ${item}\n`;
+            } else {
+                output += `● ${item}\n`;
+            }
+        });
+
+        majorResultDiv.innerHTML = output
+            .replace(/✔ (.*)/g, "<span class='taken'>✔ $1</span>")
+            .replace(/● (.*)/g, "<span class='not-taken'>● $1</span>");
+
+        majorResultDiv.style.display = 'block';
+        majorInputAreaDiv.style.display = 'block';
+        majorMessageDiv.textContent = "";
+    }
+
+    // 중핵 과목 추가
+    function addCoreSubject() {
+        const input = document.getElementById('subjectInput');
+        const subject = input.value.trim();
+
+        if (!subject) {
+            messageDiv.textContent = "과목명을 입력해주세요.";
+            return;
+        }
+        if (!currentCoreCategory) {
+            messageDiv.textContent = "먼저 중핵 카테고리에서 과목을 선택하세요.";
+            return;
+        }
+        if (taken.includes(subject)) {
+            messageDiv.textContent = "이미 추가된 과목입니다.";
+            input.value = "";
+            return;
+        }
+        const currentList = coreData[currentCoreCategory];
+        if (!currentList.includes(subject)) {
+            messageDiv.textContent = "해당 과목은 현재 카테고리 목록에 없습니다.";
+            return;
+        }
+
+        taken.push(subject);
+        messageDiv.textContent = "과목이 체크되었습니다.";
+        input.value = "";
+        showCoreList(currentCoreCategory);
+    }
+
+    // 전공 과목 추가
+    function addMajorSubject() {
+        const input = document.getElementById('majorSubjectInput');
+        const subject = input.value.trim();
+
+        if (!subject) {
+            majorMessageDiv.textContent = "과목명을 입력해주세요.";
+            return;
+        }
+        if (!currentMajorCategory) {
+            majorMessageDiv.textContent = "먼저 전공 카테고리에서 과목을 선택하세요.";
+            return;
+        }
+        if (taken.includes(subject)) {
+            majorMessageDiv.textContent = "이미 추가된 과목입니다.";
+            input.value = "";
+            return;
+        }
+        const currentList = majorData[currentMajorCategory];
+        if (!currentList.includes(subject)) {
+            majorMessageDiv.textContent = "해당 과목은 현재 카테고리 목록에 없습니다.";
+            return;
+        }
+
+        taken.push(subject);
+        majorMessageDiv.textContent = "과목이 체크되었습니다.";
+        input.value = "";
+        showMajorList(currentMajorCategory);
+    }
+
+    // 중핵 카테고리 이름 얻기 (필요시)
+    function getCoreCategoryName(num) {
+        const names = {
+            1: "자연 과학",
+            2: "인문",
+            3: "휴먼 테크",
+            4: "영어"
+        };
+        return names[num] || "";
+    }
+
+    // 전공 카테고리 이름 얻기 (필요시)
+    function getMajorCategoryName(num) {
+        const names = {
+            101: "국제학부",
+            102: "사회복지학과",
+            103: "법학과"
+        };
+        return names[num] || "";
+    }
+</script>
+
+</body>
+</html>
