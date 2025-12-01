@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <title>중핵 테이블 클릭 시 목록 표시</title>
+    <style>
+        .container {
+            display: flex;
+            gap: 0;
+        }
+        table {
+            border-collapse: collapse;
+            border: 3px solid #000;
+            cursor: pointer;
+            width: 150px;
+        }
+        th {
+            border: 1px solid #555;
+            padding: 15px;
+            text-align: center;
+            background: #f0f0f0;
+            font-size: 18px;
+        }
+        #result {
+            margin-top: 30px;
+            font-size: 20px;
+            white-space: pre-line;
+        }
+        .taken {
+            color: green;
+            font-weight: bold;
+        }
+        .not-taken {
+            color: gray;
+        }
+        #inputArea {
+            margin-top: 20px;
+        }
+        #inputArea input[type="text"] {
+            padding: 5px;
+            font-size: 16px;
+            width: 300px;
+        }
+        #inputArea button {
+            padding: 6px 12px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        #message {
+            margin-top: 10px;
+            font-size: 16px;
+            color: red;
+            height: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<h2>중핵 카테고리 클릭 시 과목 목록 표시</h2>
+
+<div class="container">
+    <table onclick="showList(1)">
+        <tr><th>자연 과학</th></tr>
+    </table>
+
+    <table onclick="showList(2)">
+        <tr><th>인문</th></tr>
+    </table>
+
+    <table onclick="showList(3)">
+        <tr><th>휴먼 테크</th></tr>
+    </table>
+
+    <table onclick="showList(4)">
+        <tr><th>영어</th></tr>
+    </table>
+</div>
+
+<div id="result">여기에 해당 중핵 카테고리의 목록이 표시됩니다</div>
+
+<div id="inputArea">
+    <input type="text" id="subjectInput" placeholder="수강한 과목명을 입력하세요" />
+    <button onclick="addSubject()">과목 추가</button>
+    <div id="message"></div>
+</div>
+
+<script>
+    // 중핵 과목 목록
+    const tableData = {
+        1: ["기초 과학 A", "기초 과학 B", "실험 과학 C"],
+        2: ["인문학 이론", "철학 개론", "사회 이해"],
+        3: ["휴먼테크 기초", "AI 이해", "디지털 리터러시"],
+        4: ["English Reading", "English Writing", "English Conversation"]
+    };
+
+    // 초기엔 수강한 과목 없음
+    const taken = [];
+
+    // 현재 선택된 카테고리 번호 기억
+    let currentCategory = null;
+
+    function showList(tableNum) {
+        currentCategory = tableNum;
+        const categoryName = document.querySelectorAll("th")[tableNum - 1].textContent;
+        const list = tableData[tableNum];
+
+        let output = categoryName + " 목록:\n\n";
+
+        list.forEach(item => {
+            if (taken.includes(item)) {
+                output += `✔ ${item}\n`;     // 초록 체크 (수강한 과목)
+            } else {
+                output += `● ${item}\n`;     // 회색 점 (미수강 과목)
+            }
+        });
+
+        document.getElementById("result").innerHTML = output
+            .replace(/✔ (.*)/g, "<span class='taken'>✔ $1</span>")
+            .replace(/● (.*)/g, "<span class='not-taken'>● $1</span>");
+
+        document.getElementById("message").textContent = "";
+    }
+
+    function addSubject() {
+        const input = document.getElementById("subjectInput");
+        const subject = input.value.trim();
+
+        if (!subject) {
+            document.getElementById("message").textContent = "과목명을 입력해주세요.";
+            return;
+        }
+
+        if (taken.includes(subject)) {
+            document.getElementById("message").textContent = "이미 추가된 과목입니다.";
+            input.value = "";
+            return;
+        }
+
+        if (currentCategory === null) {
+            document.getElementById("message").textContent = "먼저 카테고리를 클릭해주세요.";
+            return;
+        }
+
+        const currentList = tableData[currentCategory];
+
+        if (currentList.includes(subject)) {
+            taken.push(subject);
+            document.getElementById("message").textContent = "과목이 체크되었습니다.";
+            showList(currentCategory);
+        } else {
+            document.getElementById("message").textContent = "해당 과목은 현재 카테고리 목록에 없습니다.";
+        }
+
+        input.value = "";
+    }
+</script>
+
+</body>
+</html>
